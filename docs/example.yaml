@@ -1,0 +1,9 @@
+apiVersion: thames.id.au/v1beta1
+kind: Application
+metadata:
+  name: test-docker-debug
+  namespace: applications
+spec:
+  application: docker-debug
+  environment: test
+  version: blue
