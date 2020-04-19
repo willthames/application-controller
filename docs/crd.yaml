@@ -21,7 +21,11 @@ spec:
                   type: string
                 version:
                   type: string
-
+          anyOf:
+            required:
+              - application
+              - version
+              - environment
   scope: Namespaced
   names:
     plural: applications

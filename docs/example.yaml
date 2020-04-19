@@ -6,4 +6,4 @@ metadata:
 spec:
   application: docker-debug
   environment: test
-  version: blue
+  version: green
