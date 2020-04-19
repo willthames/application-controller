@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ job_name }}
+  namespace: {{ namespace }}
+spec:
+  template:
+    metadata:
+      name: {{ job_name }}
+      namespace: {{ namespace }}
+    spec:
+      serviceAccount: {{ service_account }}
+      containers:
+        - name: configurator
+          image: {{ image }}:{{ config_version }}
+          command:
+            - {{ command }}
+            - {{ application }}
+            - {{ environment }}
+            - {{ version }}
+      restartPolicy: Never
+      backoffLimit: 0

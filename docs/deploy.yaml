@@ -1,0 +1,108 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: application-operator
+  namespace: applications
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: applications
+  name: application-operator
+rules:
+- apiGroups: 
+    - batch/v1
+  resources:
+    - jobs
+  verbs:
+    - get
+    - watch
+    - list
+    - create
+    - update
+    - delete
+- apiGroups: 
+    - thames.id.au/v1beta1
+  resources: 
+    - applications
+  verbs:
+    - get
+    - watch
+    - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: application-operator
+  namespace: applications
+subjects:
+- kind: ServiceAccount
+  name: application-operator
+roleRef:
+  kind: Role
+  name: application-operator
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: config
+  namespace: applications
+data:
+  job-template: |
+    apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: {{ job_name }}
+      namespace: {{ namespace }}
+    spec:
+      template:
+        metadata:
+          name: {{ job_name }}
+          namespace: {{ namespace }}
+        spec:
+          serviceAccount: {{ service_account }}
+          containers:
+            name: configurator
+            image: {{ image }}
+            command: 
+              - {{ command }}
+              - {{ application }}
+              - {{ environment }}
+              - {{ version }}
+          restartPolicy: Never
+          backoffLimit: 0
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: application-operator
+  namespace: applications
+spec:
+  template:
+    spec:
+      serviceAccount: application-operator
+      securityContext:
+        runAsUser: 1234
+        runAsGroup: 1234
+        readOnlyRootFilesystem: true
+      containers:
+        - name: application-operator
+          image: willthames/application-operator
+          command:
+            - /bin/application-operator
+            - -t
+            - /config/job-template
+            - -n
+            - applications
+          env:
+            - name: CONFIG_VERSION
+              value: "abcd-1234"  # this should be configured by CI
+          volumeMounts:
+            - name: config
+              mountPath: /config
+      volumes:
+        - name: config
+          configMap:
+            name: config
+          

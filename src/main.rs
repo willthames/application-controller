@@ -1,9 +1,12 @@
 use futures::{StreamExt, TryStreamExt, executor::block_on};
+use handlebars::Handlebars;
+use std::path::PathBuf;
+use std::fs;
 use serde::{
     Serialize,
     Deserialize
 };
-use serde_json::json;
+use serde_yaml;
 
 use kube::{
     api::{Api, WatchEvent, PostParams},
@@ -35,58 +38,58 @@ struct Cli {
     #[structopt(short = "n", long = "namespace", default_value = "applications")]
     namespace: String,
     #[structopt(short = "i", long = "image", env = "IMAGE")]
-    image: String
+    image: String,
+    #[structopt(short = "c", long = "command", default_value = "/bin/deploy")]
+    command: String,
+    #[structopt(short = "s", long = "service-account", default_value = "default")]
+    service_account: String,
+    #[structopt(short = "t", long = "template", parse(from_os_str))]
+    template: PathBuf,
 }
 
-
+#[derive(Serialize)]
+struct TemplateVars {
+    application: String,
+    environment: String,
+    version: String,
+    command: String,
+    job_name: String,
+    namespace: String,
+    service_account: String,
+    image: String
+}
 
 fn ensure_application(client: Client, application: &Application, opts: &Cli) {
 
     let name = application.metadata.name.as_ref().expect("Application must have a name");
-    let namespace = application.metadata.namespace.as_ref().expect(&format!("Application {} must be namespaced", name));
-    let environment = &application.spec.environment;
-    let version = &application.spec.version;
-    let application_name = &application.spec.application;
+    let version = application.spec.version.clone();
     let config_version = std::env::var("CONFIG_VERSION").expect("CONFIG_VERSION environment variable must be set");
-    let job_name = format!("{}-{}-{}",
+    let namespace = application.metadata.namespace.as_ref().expect(&format!("Application {} must be namespaced", name));
+
+    let template_vars = TemplateVars {
+        application: application.spec.application.clone(),
+        environment: application.spec.environment.clone(),
+        version: version.clone(),
+        command: opts.command.clone(),
+        namespace: namespace.to_string(),
+        job_name: format!("{}-{}-{}",
                             name,
                             config_version.get(..8).or(Some(&config_version)).unwrap(),
-                            &version.get(..8).or(Some(&version)).unwrap());
+                            version.get(..8).or(Some(&version)).unwrap()),
+        service_account: opts.service_account.clone(),
+        image: opts.image.clone()
+    };
+
     println!(
         "Ensuring that application {:?} in environment {:?} has version {:?}",
-        application_name,
-        environment,
-        version
+        template_vars.application,
+        template_vars.environment,
+        template_vars.version
     );
-    let application_job = serde_json::from_value(json!({
-        "apiVersion": "batch/v1",
-        "kind": "Job",
-        "metadata": {
-            "name": job_name,
-            "namespace": namespace
-        },
-        "spec": {
-            "template": {
-                "metadata": {
-                    "name": job_name
-                },
-                "spec": {
-                    "containers": [{
-                        "name": "configurator",
-                        "image": opts.image,
-                        "command": [
-                            "/bin/deploy",
-                            application_name,
-                            environment,
-                            version
-                        ]
-                    }],
-                    "restartPolicy": "Never",
-                    "backoffLimit": 0
-                }
-            }
-        }
-    })).unwrap();
+    let reg = Handlebars::new();
+    let contents = fs::read_to_string(&opts.template)
+        .expect("Something went wrong reading the file");
+    let application_job : Job = serde_yaml::from_str(&reg.render_template(&contents, &template_vars).unwrap()).unwrap();
     let pp = PostParams::default();
     let jobs: Api<Job> = Api::namespaced(client, &namespace);
     let created = block_on(jobs.create(&pp, &application_job));
