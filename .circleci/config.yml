@@ -31,6 +31,9 @@ jobs:
             - target/debug/.fingerprint
             - target/debug/build
             - target/debug/deps
+            - target/release/.fingerprint
+            - target/release/build
+            - target/release/deps
           key: v4-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
 
       - deploy:
