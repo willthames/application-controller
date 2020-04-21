@@ -1,0 +1,30 @@
+version: 2.1
+
+workflows:
+  build:
+    jobs:
+      - build:
+          context: quay
+
+jobs:
+  build:
+    machine: true
+
+    steps:
+      - checkout
+
+      - run:
+          name: "Build docker image"
+          command: docker build -t ${DOCKER_REGISTRY}/${DOCKER_REPO}:${CIRCLE_SHA1} .
+
+      - deploy:
+          name: "Upload container to registry"
+          command: |
+            set -eu
+            if [ "$CIRCLE_BRANCH" = "master" ]; then
+                docker login -u $DOCKER_USER -p $DOCKER_PASS $DOCKER_REGISTRY
+                VTAG="$(git describe --tags)"
+                docker push ${DOCKER_REGISTRY}/${DOCKER_REPO}:${CIRCLE_SHA1}
+                docker tag ${DOCKER_REGISTRY}/${DOCKER_REPO}:${CIRCLE_SHA1} ${DOCKER_REGISTRY}/${DOCKER_REPO}:${VTAG}
+                docker push ${DOCKER_REGISTRY}/${DOCKER_REPO}:${VTAG}
+            fi
