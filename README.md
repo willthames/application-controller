@@ -7,11 +7,13 @@ application-operator relies on a few things being explicitly set
   updated
 * `--template job-template.yml` - this is the template for the job that application-operator creates
   when either configuration changes or an application changes.
+* `--image image` docker image to pass to the job template
 
 
 ## Installation
 
-* Install the Custom Resource Definition (see docs/crd.yaml).
+* Install the Custom Resource Definition (see docs/crd.yaml or docs/crd-legacy.yaml).
+  You'll need the legacy CRD for Kubernetes 1.15 and below.
 * Install the operator (see docs/deploy.yaml)
 * Set up applications by creating new Application resources (see docs/example.yaml)
 * Add RBAC permissions for the ServiceAccount for the job (set `--service-account`
@@ -21,7 +23,7 @@ You will need a container that can do deployments. The example job template assu
 that the container can run `/bin/deploy application environment version` and that will
 do the trick. The underlying mechanism is up to you, but I'll provide an example
 container that uses ansible-runner to do the work. You can pass this as `--image`
-(e.g. `--image willthames/ansible-config`)
+(e.g. `--image application-operator/ansible-config`)
 
 This container should either mount the configuration (e.g. from a git-sync sidecar
 container) or be built with the configuration included. My preference is to build
