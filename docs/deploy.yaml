@@ -22,7 +22,7 @@ rules:
     - update
     - delete
 - apiGroups: 
-    - thames.id.au/v1beta1
+    - application-controller.github.io/v1beta1
   resources: 
     - applications
   verbs:

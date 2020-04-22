@@ -1,4 +1,4 @@
-apiVersion: thames.id.au/v1beta1
+apiVersion: application-controller.github.io/v1beta1
 kind: Application
 metadata:
   name: test-docker-debug

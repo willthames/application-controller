@@ -20,7 +20,7 @@ use structopt::StructOpt;
 
 #[derive(CustomResource, Serialize, Deserialize, Default, Clone, Debug)]
 #[kube(
-    group = "thames.id.au",
+    group = "application-operator.github.io",
     kind = "Application",
     version = "v1beta1",
     namespaced
