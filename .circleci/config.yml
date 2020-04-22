@@ -3,8 +3,7 @@ version: 2.1
 workflows:
   build:
     jobs:
-      - build:
-          context: quay
+      - build
 
 jobs:
   build:
