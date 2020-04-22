@@ -9,7 +9,8 @@ COPY src src/
 RUN cargo build --release
 
 # move to scratch at some point
-FROM debian:stretch
+FROM debian:buster
+RUN apt-get update && apt install -y libssl-dev
 
 COPY --from=builder /src/application-operator/target/release/application-operator /bin/application-operator
 
