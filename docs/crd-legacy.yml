@@ -15,21 +15,21 @@ spec:
     kind: Application
     shortNames:
       - app
-validations:
-  openAPIV3Schema:
-    type: object
-    properties:
-      spec:
-        type: object
-        properties:
-          application:
-            type: string
-          environment:
-            type: string
-          version:
-            type: string
-    anyOf:
-      required:
-        - application
-        - version
-        - environment
+  validations:
+    openAPIV3Schema:
+      type: object
+      properties:
+        spec:
+          type: object
+          properties:
+            application:
+              type: string
+            environment:
+              type: string
+            version:
+              type: string
+      anyOf:
+        - required:
+            - application
+            - version
+            - environment

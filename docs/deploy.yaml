@@ -78,8 +78,16 @@ apiVersion: apps/v1
 metadata:
   name: application-operator
   namespace: applications
+  labels:
+    app: application-operator
 spec:
+  selector:
+    matchLabels:
+      app: application-operator
   template:
+    metadata:
+      labels:
+        app: application-operator
     spec:
       serviceAccount: application-operator
       securityContext:
