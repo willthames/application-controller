@@ -11,7 +11,7 @@ metadata:
   name: application-operator
 rules:
 - apiGroups: 
-    - batch/v1
+    - batch
   resources:
     - jobs
   verbs:
@@ -22,7 +22,7 @@ rules:
     - update
     - delete
 - apiGroups: 
-    - application-controller.github.io/v1beta1
+    - application-controller.github.io
   resources: 
     - applications
   verbs:
