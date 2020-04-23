@@ -113,4 +113,3 @@ spec:
         - name: config
           configMap:
             name: config
-          

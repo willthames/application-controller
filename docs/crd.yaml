@@ -5,7 +5,7 @@ metadata:
 spec:
   group: application-controller.github.io
   versions:
-    - name: v1beta1
+    - name: v1alpha1
       served: true
       storage: true
       schema:
@@ -17,6 +17,7 @@ spec:
               properties:
                 application:
                   type: string
+                  maxLength: 31
                 environment:
                   type: string
                 version:
@@ -33,3 +34,21 @@ spec:
     kind: Application
     shortNames:
       - app
+  additionalPrinterColumns:
+    - name: Environment
+      type: string
+      description: The environment in which the application lives
+      jsonPath: .spec.environment
+    - name: Version
+      type: string
+      description: The version of the application
+      jsonPath: .spec.version
+    - name: Config
+      type: string
+      description: The version of the last applied configuration
+      jsonPath: .status.configVersion
+    - name: Last Updated
+      type: date
+      format: date-time
+      description: The time the application was last updated
+      jsonPath: .status.lastUpdated
