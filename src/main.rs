@@ -59,6 +59,11 @@ struct TemplateVars {
     image: String
 }
 
+fn version_to_rfc1123(version: String, length: usize) -> String {
+    let version = version.replace(".", "-").replace("_", "-");
+    return version.get(..length).or(Some(&version)).unwrap().trim_end_matches("-").to_string();
+}
+
 fn ensure_application(client: Client, application: &Application, opts: &Cli) {
 
     let name = application.metadata.name.as_ref().expect("Application must have a name");
@@ -72,10 +77,7 @@ fn ensure_application(client: Client, application: &Application, opts: &Cli) {
         version: version.clone(),
         command: opts.command.clone(),
         namespace: namespace.to_string(),
-        job_name: format!("{}-{}-{}",
-                            name,
-                            config_version.get(..8).or(Some(&config_version)).unwrap().replace(".", "-"),
-                            version.get(..8).or(Some(&version)).unwrap()).replace(".", "-"),
+        job_name: format!("{}-{}-{}", name, version_to_rfc1123(config_version, 20), version_to_rfc1123(version, 20)),
         service_account: opts.service_account.clone(),
         image: opts.image.clone()
     };
@@ -139,5 +141,20 @@ async fn main() -> anyhow::Result<()> {
         while let Some(event) = events.try_next().await? {
             handle(client.clone(), cli, event)?;
         }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn version_to_rfc1123_test() {
+        assert_eq!("hello-world".to_string(), version_to_rfc1123("hello-world".to_string(), 20));
+        assert_eq!("hello-worl".to_string(), version_to_rfc1123("hello-world".to_string(), 10));
+        assert_eq!("hello".to_string(), version_to_rfc1123("hello-world".to_string(), 6));
+        assert_eq!("hello-1234".to_string(), version_to_rfc1123("hello.1234".to_string(), 10));
+        assert_eq!("hello".to_string(), version_to_rfc1123("hello-----".to_string(), 10));
     }
 }
