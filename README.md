@@ -29,6 +29,14 @@ This container should either mount the configuration (e.g. from a git-sync sidec
 container) or be built with the configuration included. My preference is to build
 the container with the configuration inside, tagged with the version of the code.
 
+## Job Names
 
+Job names are derived from the application name (as per `spec.application` in the resource
+definition), the configuration version (from `CONFIG_VERSION`) and the application version
+(`spec.version`). As Jobs have a maximum length of 63, we shorten the versions to 16
+and impose a maximum length of 29 on the application name (to leave two characters for the
+separators).
 
-
+As Jobs only run once per job name, this means that the first 16 characters of versions
+must be distinct across different versions - easy with a commit hash or `git describe --long`
+but if you're `doing this-is-a-very-long-tag-prefix-$(git describe --long)` it won't work as well.
