@@ -4,9 +4,9 @@ WORKDIR /src/
 RUN USER=root cargo new application-operator
 WORKDIR /src/application-operator
 COPY Cargo.toml Cargo.lock ./
-RUN cargo update
+RUN cargo build --locked
 COPY src src/
-RUN cargo build --release
+RUN cargo build --release --locked
 
 # move to scratch at some point
 FROM debian:buster
