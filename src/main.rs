@@ -74,8 +74,8 @@ fn ensure_application(client: Client, application: &Application, opts: &Cli) {
         namespace: namespace.to_string(),
         job_name: format!("{}-{}-{}",
                             name,
-                            config_version.get(..8).or(Some(&config_version)).unwrap(),
-                            version.get(..8).or(Some(&version)).unwrap()),
+                            config_version.get(..8).or(Some(&config_version)).unwrap().replace(".", "-"),
+                            version.get(..8).or(Some(&version)).unwrap()).replace(".", "-"),
         service_account: opts.service_account.clone(),
         image: opts.image.clone()
     };
@@ -95,7 +95,7 @@ fn ensure_application(client: Client, application: &Application, opts: &Cli) {
     let created = block_on(jobs.create(&pp, &application_job));
     match created {
         Ok(_) => (),
-        Err(kube::Error::Api(ae)) => assert_eq!(ae.code, 409, "Couldn't create job"), // if you skipped delete, for instance
+        Err(kube::Error::Api(ae)) => assert_eq!(ae.code, 409, "Couldn't create job: {:?}", ae.message),
         Err(e) => panic!("Couldn't create job {:?}", e),                        // any other case is probably bad
     }
 }
