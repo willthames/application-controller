@@ -10,6 +10,7 @@ RUN cargo build --release --locked
 
 # move to scratch at some point
 FROM debian:buster
+RUN apt-get update && apt install -y libssl-dev
 
 COPY --from=builder /src/application-operator/target/release/application-operator /bin/application-operator
 
