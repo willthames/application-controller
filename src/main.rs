@@ -22,7 +22,7 @@ use structopt::StructOpt;
 #[kube(
     group = "application-operator.github.io",
     kind = "Application",
-    version = "v1beta1",
+    version = "v1alpha1",
     namespaced
 )]
 

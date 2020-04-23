@@ -1,9 +1,9 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: applications.application-controller.github.io
+  name: applications.application-operator.github.io
 spec:
-  group: application-controller.github.io
+  group: application-operator.github.io
   versions:
     - name: v1alpha1
       served: true
@@ -38,17 +38,17 @@ spec:
     - name: Environment
       type: string
       description: The environment in which the application lives
-      jsonPath: .spec.environment
+      JSONPath: .spec.environment
     - name: Version
       type: string
       description: The version of the application
-      jsonPath: .spec.version
+      JSONPath: .spec.version
     - name: Config
       type: string
       description: The version of the last applied configuration
-      jsonPath: .status.configVersion
+      JSONPath: .status.configVersion
     - name: Last Updated
       type: date
       format: date-time
       description: The time the application was last updated
-      jsonPath: .status.lastUpdated
+      JSONPath: .status.lastUpdated
