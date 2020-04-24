@@ -4,19 +4,53 @@ metadata:
   name: {{ job_name }}
   namespace: {{ namespace }}
 spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 86400
   template:
     metadata:
       name: {{ job_name }}
       namespace: {{ namespace }}
     spec:
+      dns_policy: ClusterFirst
+      dns_config:
+        options:
+          - name: ndots
+            value: "1"
+      imagePullSecrets:
+        - name: quay.io
       serviceAccount: {{ service_account }}
+      securityContext:
+        runAsUser: 1030
+        runAsGroup: 1030
+        fsGroup: 1030
       containers:
         - name: configurator
-          image: {{ image }}:{{ config_version }}
+          image: {{ image }}
           command:
             - {{ command }}
             - {{ application }}
             - {{ environment }}
             - {{ version }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          resources:
+            limit:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: runner-env-dir
+              mountPath: /tmp/env
+            - name: runner-vault
+              mountPath: /vault
+      volumes:
+        - name: runner-env-dir
+          configMapRef:
+            name: runner-env-dir
+        - name: runner-vault
+          secretRef:
+            secretName: runner-vault
       restartPolicy: Never
       backoffLimit: 0

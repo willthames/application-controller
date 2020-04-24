@@ -29,11 +29,11 @@ spec:
               type: string
             version:
               type: string
-      anyOf:
-        - required:
-            - application
-            - version
-            - environment
+          anyOf:
+            - required:
+                - application
+                - version
+                - environment
   additionalPrinterColumns:
     - name: Environment
       type: string
