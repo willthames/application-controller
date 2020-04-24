@@ -98,7 +98,7 @@ fn ensure_application(client: Client, application: &Application, opts: &Cli) {
         version: version.clone(),
         command: opts.command.clone(),
         namespace: namespace.to_string(),
-        job_name: format!("{}-{}-{}", name, version_to_rfc1123(config_version, 20), version_to_rfc1123(version, 20)),
+        job_name: format!("{}-{}-{}", name, version_to_rfc1123(config_version, 16), version_to_rfc1123(version, 16)),
         service_account: opts.service_account.clone(),
         image: opts.image.clone(),
         extra: opts.extra.clone().into_iter().collect(),
