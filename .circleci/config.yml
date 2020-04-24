@@ -9,6 +9,7 @@ jobs:
   build:
     docker:
       - image: circleci/rust:1.42.0
+    resource_class: xlarge
 
     steps:
       - checkout
