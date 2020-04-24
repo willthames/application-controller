@@ -1,7 +1,9 @@
 use futures::{StreamExt, TryStreamExt, executor::block_on};
 use handlebars::Handlebars;
 use std::path::PathBuf;
+use std::error::Error;
 use std::fs;
+use std::collections::HashMap;
 use serde::{
     Serialize,
     Deserialize
@@ -32,6 +34,21 @@ pub struct ApplicationSpec {
     version: String
 }
 
+/// Parse a single key-value pair
+/// https://github.com/TeXitoi/structopt/blob/master/examples/keyvalue.rs
+fn parse_key_val<T, U>(s: &str) -> Result<(T, U), Box<dyn Error>>
+where
+    T: std::str::FromStr,
+    T::Err: Error + 'static,
+    U: std::str::FromStr,
+    U::Err: Error + 'static,
+{
+    let pos = s
+        .find('=')
+        .ok_or_else(|| format!("invalid KEY=value: no `=` found in `{}`", s))?;
+    Ok((s[..pos].parse()?, s[pos + 1..].parse()?))
+}
+
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(StructOpt)]
 struct Cli {
@@ -45,6 +62,8 @@ struct Cli {
     service_account: String,
     #[structopt(short = "t", long = "template", parse(from_os_str))]
     template: PathBuf,
+    #[structopt(short = "e", long = "extra-vars", parse(try_from_str = parse_key_val), number_of_values = 1)]
+    extra: Vec<(String, String)>,
 }
 
 #[derive(Serialize)]
@@ -56,7 +75,9 @@ struct TemplateVars {
     job_name: String,
     namespace: String,
     service_account: String,
-    image: String
+    image: String,
+    extra: HashMap<String,String>,
+    resource_name: String,
 }
 
 fn version_to_rfc1123(version: String, length: usize) -> String {
@@ -79,7 +100,9 @@ fn ensure_application(client: Client, application: &Application, opts: &Cli) {
         namespace: namespace.to_string(),
         job_name: format!("{}-{}-{}", name, version_to_rfc1123(config_version, 20), version_to_rfc1123(version, 20)),
         service_account: opts.service_account.clone(),
-        image: opts.image.clone()
+        image: opts.image.clone(),
+        extra: opts.extra.clone().into_iter().collect(),
+        resource_name: application.metadata.name.clone().unwrap(),
     };
 
     println!(

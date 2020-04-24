@@ -40,3 +40,20 @@ separators).
 As Jobs only run once per job name, this means that the first 16 characters of versions
 must be distinct across different versions - easy with a commit hash or `git describe --long`
 but if you're `doing this-is-a-very-long-tag-prefix-$(git describe --long)` it won't work as well.
+
+## Job Templates
+
+Variables provided to the job template from the Application resource:
+
+* `application` - from `spec.application`
+* `version` - from `spec.version`
+* `enviroment` - from `spec.environment`
+* `resource_name` - from `metadata.name`
+* `namespace` - from `metadata.namespace`
+
+Other available variables:
+* `job_name`
+* `command` - from `-c`
+* `image` - from `-i`
+* `service_account` - from `-s`
+* `extra` - a map of arbitrary key=value pairs - by passing `-e hello=world`, `{{ extra.hello }}` will print `world`
